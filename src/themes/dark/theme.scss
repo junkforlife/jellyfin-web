@@ -533,7 +533,7 @@ html {
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
-    --elegantFinFooterText: "ElegantFin v25.11.25";
+    --elegantFinFooterText: "ElegantFin v25.12.31";
 
     /* Base theme colors */
     color-scheme: dark;
@@ -1046,7 +1046,7 @@ body {
 /* episode grid start */
 
 @supports (display: revert) {
-    .vertical-list:has(.listItem-largeImage) {
+    .layout-desktop .vertical-list:has(.listItem-largeImage) {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(min(var(--minEpisodeCardWidth), 100%), 1fr));
         gap: var(--itemColumnGap);
@@ -1588,7 +1588,6 @@ body {
 #itemDetailPage .emby-scroller,
 #itemDetailPage .scrollX {
     margin: 0 calc(-1 * var(--sidePadding));
-    padding: 0 var(--sidePadding);
     padding-left: calc(var(--sidePadding) - 0.375em);
     /* mask-image: linear-gradient(90deg, transparent, white var(--sidePadding), white calc(100vw - var(--sidePadding)), transparent); */
 }
@@ -1600,8 +1599,12 @@ body {
 }
 
 .emby-scroller,
-.hiddenScrollX.scrollX {
+.scrollX {
     padding-left: calc(var(--sidePadding) - 0.375em);
+}
+
+.sectionTabs .scrollX {
+    padding-left: 0;
 }
 
 .itemsContainer:not(.editorsChoiceItemsContainer) {
@@ -1611,16 +1614,6 @@ body {
 .layout-desktop .sectionTitle,
 .layout-tv .sectionTitle {
     font-size: 1.5rem !important;
-}
-
-.sectionTitleContainer-cards {
-    padding-top: 0;
-    margin: 0.75em 0 -0.75em 0;
-}
-
-.layout-mobile :not(.sectionTitleContainer-cards) > .sectionTitle-cards {
-    text-align: left;
-    margin: 0.75em 0 -0.75em 0;
 }
 
 .emby-scrollbuttons,
@@ -1844,7 +1837,7 @@ body {
 
 .layout-tv .detailImageContainer .card {
     width: 25vw !important;
-    display: grid !important;
+    display: block !important;
     position: fixed !important;
     top: 0;
     bottom: 0;
@@ -3497,9 +3490,26 @@ div[data-role="controlgroup"] a.ui-btn-active {
     color: white !important;
 }
 
+.sectionTitleContainer-cards {
+    padding-top: 0;
+    margin: 0.75em 0 -0.75em 0;
+}
+
 .sectionTitleTextButton > * {
+    text-align: left;
+    /* !important are needed for proper alignment on phones */
     padding: 0.3em 0 !important;
     margin: 0 0 !important;
+    /* this prevents long library names from breaking into another line */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 88vw;
+}
+
+/* this is needed for alignment of non-clickable section headings on phones */
+.layout-mobile :not(.sectionTitleContainer-cards) > .sectionTitle-cards {
+    margin: 0.75em 0 -0.75em 0;
 }
 
 .dashboardSection .sectionTitleTextButton > .material-icons,
@@ -3797,18 +3807,13 @@ div[data-role="controlgroup"] a.ui-btn-active {
     display: var(--itemOriginalTitleVisibility);
 }
 
-.channelPrograms + .channelPrograms,
-.guide-channelHeaderCell + .guide-channelHeaderCell {
-    margin-top: 0;
-}
-
 .channelPrograms,
-.guide-channelHeaderCell,
 .programCell {
     border-color: transparent;
     /* this disables the 'color coded backgrounds' */
     background-color: transparent !important;
     border-radius: var(--smallRadius);
+    height: 4.42em;
 }
 
 .guideProgramName {
@@ -3830,22 +3835,38 @@ div[data-role="controlgroup"] a.ui-btn-active {
     padding: 0;
 }
 
-.guideChannelImage {
-    background-color: rgba(255, 255, 255, 0.05);
-    bottom: 0.35em;
-    right: 0.35em;
-    top: 0.35em;
-    width: calc(100% - 0.7em);
-    border-radius: var(--smallerRadius);
+.layout-mobile .guideChannelImage {
+    background-position: center;
+    width: calc(100% - var(--sidePadding));
+    right: 0;
+}
+
+.guide-channelHeaderCell {
+    background-color: rgba(255, 255, 255, 0.125);
+    margin: 0.35em 0.7em 0.7em 0.7em;
+    width: auto;
+    height: calc(4.42em - 0.7em);
+    border-radius: var(--smallRadius);
+}
+
+.guideChannelNumber {
+    font-size: 1em;
 }
 
 #guideTab {
     padding-top: 3em !important;
 }
 
-.guide-channelHeaderCell:focus,
-.programCell:focus {
+.guide-channelHeaderCell:focus {
     background-color: var(--highlightOutlineColor) !important;
+}
+
+.programCell:focus {
+    background-color: transparent !important;
+}
+
+.programCell:focus > .guideProgramName {
+    background-color: var(--highlightOutlineColor);
 }
 
 .emby-select-iconbutton {
@@ -4260,12 +4281,12 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     padding: 0;
 }
 
-.headerTabs.sectionTabs {
-    display: grid;
+.sectionTabs {
+    display: inline-grid;
     height: var(--appBarHeight);
 }
 
-.layout-mobile .headerTabs.sectionTabs {
+.layout-mobile .sectionTabs {
     align-content: center;
 }
 
@@ -4311,7 +4332,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     padding: 0 0.5em;
 }
 
-/* this prevents the section tabs from hiding all the way up */
+/* this prevents the section tabs from hiding all the way up on phones (not-tablets)*/
 .headroom--unpinned {
     -webkit-transform: translateY(calc(-1 * var(--appBarHeight) - var(--borderWidth)));
     transform: translateY(calc(-1 * var(--appBarHeight) - var(--borderWidth)));
@@ -4336,14 +4357,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     overflow: visible !important;
 }
 
-.layout-tv .sectionTabs {
-    /* this prevents the section tabs from being off-center in the music library
-     after I set the overflow to visible to fix visual glitches */
-    width: 70%;
-    margin-right: 2em;
-}
-
-.headerTabs.sectionTabs .emby-tab-button {
+.sectionTabs .emby-tab-button {
     display: inline-flex;
     margin: 0.25em 0.5em;
     padding: 0 1.25em;
@@ -4354,18 +4368,15 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     background-color: var(--darkerGradientPointAlpha);
 }
 
-.headerTabs.sectionTabs .emby-tab-button-active {
+.sectionTabs .emby-tab-button-active {
     margin: 0.25em 0.5em;
     color: black;
     background-color: var(--textColor);
 }
 
-.layout-mobile .headerTabs.sectionTabs .emby-tab-button:first-child {
-    margin-left: var(--sidePadding);
-}
-
-.layout-mobile .headerTabs.sectionTabs .emby-tab-button:last-child {
-    margin-right: var(--sidePadding);
+/* this increases page top padding when section tabs are expanded */
+.libraryPage:not(.noSecondaryNavPage) {
+    padding-top: calc(var(--appBarHeight) * 2 + 0.5em) !important;
 }
 
 @media (min-width: 75em) {
@@ -4376,14 +4387,28 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
         align-self: center;
         -webkit-justify-content: center;
         justify-content: center;
+        /* this collapses the section tabs expanded earlier than the default 100em max-width */
         margin-top: calc(-1 * var(--appBarHeight));
         position: relative;
         width: auto;
     }
 
-    /* this reduces top page padding when section tabs are minimised */
-    .libraryPage:not(.noSecondaryNavPage):not(.layout-tv .libraryPage) {
-        padding-top: 6.8em !important;
+    /* this reduces page top padding when section tabs are collapsed */
+    .libraryPage:not(.noSecondaryNavPage) {
+        padding-top: calc(var(--appBarHeight) + 0.5em) !important;
+    }
+
+    /* this fixes the header like on desktop on larger tablet screens */
+    .headroom--unpinned {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 100em) {
+    /* this reduces top padding when section tabs are collapsed on TVs */
+    .layout-tv .libraryPage:not(.noSecondaryNavPage) {
+        padding-top: calc(var(--appBarHeight) + 0.5em) !important;
     }
 }
 
@@ -4392,16 +4417,27 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     .sectionTabs {
         font-size: 100%;
     }
+
+    /* this keeps the section tabs expanded on TVs under 100em width */
+    .layout-tv .sectionTabs {
+        margin-top: unset;
+    }
+
+    /* this increases page top padding when section tabs are expanded on TVs*/
+    .layout-tv .libraryPage:not(.noSecondaryNavPage) {
+        padding-top: calc(var(--appBarHeight) * 2 + 0.5em) !important;
+    }
 }
 
-/* this increased top page padding when section tabs are maximised */
-.libraryPage:not(.noSecondaryNavPage) {
-    padding-top: 9.5em !important;
-}
+@media (max-width: 75em) {
+    /* these margins are applied only on phones, not tablets*/
+    .layout-mobile .sectionTabs .emby-tab-button:first-child {
+        margin-left: var(--sidePadding);
+    }
 
-/* this limits top page padding when section tabs always on TVs */
-.layout-tv .libraryPage:not(.noSecondaryNavPage) {
-    padding-top: 6em !important;
+    .layout-mobile .sectionTabs .emby-tab-button:last-child {
+        margin-right: var(--sidePadding);
+    }
 }
 
 .layout-tv .headerLeft {
@@ -4439,21 +4475,12 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
         z-index: -1;
     }
 
-    .layout-mobile .headerTop {
-        height: calc(var(--appBarHeight) - 1em);
-    }
-
-    .headerTabs.sectionTabs {
+    .sectionTabs {
         padding-bottom: 1.5em;
     }
 
-    .layout-mobile .headerTabs.sectionTabs {
+    .layout-mobile .sectionTabs {
         align-content: center;
-    }
-
-    .headroom--unpinned {
-        -webkit-transform: translateY(calc(-0.75 * var(--appBarHeight) - var(--borderWidth)));
-        transform: translateY(calc(-0.75 * var(--appBarHeight) - var(--borderWidth)));
     }
 }
 

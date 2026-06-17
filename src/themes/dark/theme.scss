@@ -523,7 +523,7 @@ html {
     color: #00a4dc;
 }
 
-/* ElegantFin Theme for Jellyfin by lscambo13 */
+/*! ElegantFin Theme v26.06.06 for Jellyfin by lscambo13 */
 
 /* Add-ons: Uncomment to enable */
 /* @import url(./assets/add-ons/media-bar-plugin-support-nightly.css); */
@@ -533,7 +533,7 @@ html {
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
-    --elegantFinFooterText: "ElegantFin v25.12.31";
+    --elegantFinFooterText: "ElegantFin v26.06.06";
 
     /* Base theme colors */
     color-scheme: dark;
@@ -580,6 +580,7 @@ html {
     /* textures */
     --backgroundGradient: linear-gradient(0deg, var(--darkerGradientPoint) 35%, var(--lighterGradientPoint));
     --cardBackgroundGradient: linear-gradient(0deg, var(--darkerGradientPoint), 25%, var(--lighterGradientPoint));
+    --backgroundAlphaOverlay: linear-gradient(180deg, var(--darkerGradientPointAlpha) 80%, transparent);
     --headerColorGradient: linear-gradient(180deg, rgba(30, 40, 54, 0.95) 30%, 55%, transparent 90%);
     --headerColorGradientAlt: linear-gradient(180deg, rgba(30, 40, 54, 1), 70%, transparent);
     --headerBlurMask: linear-gradient(180deg, white 50%, 85%, transparent);
@@ -591,15 +592,15 @@ html {
     --hoverGradientV: linear-gradient(
         0deg,
         transparent,
-        rgb(255 255 255 / 100%) 45%,
-        rgb(255 255 255 / 100%) 55%,
+        rgb(255 255 255 / 35%) 45%,
+        rgb(255 255 255 / 35%) 55%,
         transparent
     );
     --hoverGradientH: linear-gradient(
         90deg,
         transparent,
-        rgb(255 255 255 / 100%) 45%,
-        rgb(255 255 255 / 100%) 55%,
+        rgb(255 255 255 / 35%) 45%,
+        rgb(255 255 255 / 35%) 55%,
         transparent
     );
 
@@ -643,13 +644,18 @@ html {
        use 50% to place it at the center of a card */
     --overlayPlayButtonPosition: 2.8em;
 
-    /* use 'Material Icons Round' for the new icons [default]; 
-       use 'Material Icons' to revert to old icons */
-    --iconPack: "Material Icons Round", Material Icons;
+    /* use 'Material Symbols Rounded' for the new icons (~5mb) [default]; 
+       use 'Material Symbols Rounded Minimal' to reduce bandwidth usage (~115kb) (may break compatibility with plugins);
+       use 'Material Icons' to revert to stock Jellyfin icons */
+    --iconPack: "Material Symbols Rounded";
 
     /* none: hides the watched and mark favorite buttons on hover [default];
-       block: makes them visible use block */
+       block: makes them visible */
     --extraCardButtonsVisibility: none;
+
+    /* block: makes the three-dot menu button visible [default];
+       none: hides the three-dot menu button on hover */
+    --menuButtonVisibility: block;
 
     /* block: keeps the original (foreign) title visible if it is available [default];
        none: always hides the original title of Movie/TV */
@@ -667,8 +673,20 @@ html {
        block: makes the title always visible */
     --itemTitleVisibility: none;
 
+    /* block: shows the music artist clear logo if it is available [default];
+       none: makes the music artist clear logo always hidden */
+    --artistClearLogoVisibility: block;
+
+    /* none: makes the music artist title always hidden [default];
+       block: shows the text-based music artist title */
+    --artistTitleVisibility: none;
+
+    /* unset: makes the artist background dim for better clear logo visibility on desktops [default]; 
+       none: makes the music artist page background fully visible */
+    --artistPageBackground: unset;
+
     /* block: shows the mini play or three-dot button on cards only on mobile [default]; 
-    none: makes them always hidden only on mobile */
+       none: makes them always hidden only on mobile */
     --miniOverlayButtonVisibility: block;
 
     /* use "" to enable the card hover effect [default]; 
@@ -682,6 +700,10 @@ html {
     /* use 10% to crop the top 10% of a backdrop image on a 16:9 screen (recommended) [default]; 
        use a figure between 0% and 20% according to your liking */
     --backdropTrimFromTop: 10%;
+
+    /* use 1 to keep the size 'Continue Watching' cards normal [default]; 
+       use numbers greater than 1.0 to increase their size (example: 1.25) */
+    --resumeCardScale: 1;
 }
 
 html {
@@ -698,56 +720,78 @@ body {
     --clearLogoBottomSpace: 11em;
 }
 
+select {
+    text-overflow: ellipsis;
+}
+
 .layout-desktop > body:has(> audio[src]) {
     --primaryItemPageNegativeSpace: calc(14vh + 5em);
     --secondaryItemPageNegativeSpace: calc(60vh + 5em);
 }
 
 .layout-mobile {
-    --itemColumnGap: 0;
     --headerColorGradient: var(--headerColorGradientAlt);
     --blurLargest: blur(12px);
     --headerBlurMask: linear-gradient(180deg, white 60%, 90%, transparent);
+    --itemColumnGap: 0.5em;
 }
 
 .layout-mobile > body {
     --secondaryItemPageNegativeSpace: 45vh;
 }
 
-/* Material Icons Round */
-/* https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200 */
+/* Material Symbols Rounded - Minimal */
+/* https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,airplay,album,arrow_back,arrow_forward,arrow_upward,audiotrack,autorenew,backspace,book,brightness_high,call_split,cast,check,chevron_left,chevron_right,clear,close,closed_caption,cloud_download,content_copy,dashboard,delete,devices_other,download,drag_handle,dvr,exit_to_app,expand_more,explore,fast_forward,fast_rewind,favorite,fiber_manual_record,fiber_smart_record,file_download,filter_alt,folder,folder_open,forward_30,fullscreen,get_app,groups,home,image,info,info_outline,keyboard,keyboard_arrow_down,keyboard_arrow_left,keyboard_arrow_right,keyboard_arrow_up,keyboard_return,library_add_check,live_tv,local_movies,lock,lyrics,menu,mode_edit,more_vert,movie,music_note,music_video,navigate_before,navigate_next,pause,pause_circle_filled,pause_circle_outline,person,phonelink_lock,photo,photo_album,picture_in_picture_alt,play,play_arrow,play_circle_filled,play_circle_outline,playlist_add,preview,queue,queue_music,quiz,redo,refresh,remove_circle,remove_red_eye,repeat,repeat_one,replay,replay_10,save,schedule,search,settings,shuffle,skip_next,skip_previous,sort_by_alpha,space_bar,star,stop,storage,subtitles,sync,text_decrease,text_increase,theaters,toc,tv,undo,update,video_library,videocam,view_comfy,volume_off,volume_up */
 @font-face {
-    font-family: "Material Icons Round";
+    font-family: "Material Symbols Rounded Minimal";
     font-style: normal;
     font-weight: 100 700;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/materialsymbolsrounded/v267/sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190Fjzag.woff2)
+    src: url(https://fonts.gstatic.com/l/font?kit=sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzarESMdAUY9qjb3u1M7e05tMSFFiwiIx7ihGnzWmz-lkbsBJUso54WUKiEWtV5-yu0mchXaMnO1vqpcxiqEd46a1XUtwWncyNNmxYr8hocRsPBG56BqeEkny0qMU_aSz_M2MYR8p9qc8uUfT0rnccAg__qWWJGuzJMRCBsajdQcef&skey=70ddea8fe54d532e&v=v346)
+        format("woff2");
+}
+
+/* Material Symbols Rounded - Full */
+/* https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200 */
+@font-face {
+    font-family: "Material Symbols Rounded";
+    font-style: normal;
+    font-weight: 100 700;
+    src: url(https://fonts.gstatic.com/s/materialsymbolsrounded/v346/sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190Fjzag.woff2)
         format("woff2");
 }
 
 .material-icons {
-    font-family: var(--iconPack) !important;
+    font-family:
+        var(--iconPack),
+        Material Icons !important;
     font-weight: normal;
     font-style: normal;
-    display: inline-block;
     line-height: 1;
-    text-transform: none;
     letter-spacing: normal;
-    word-wrap: normal;
+    text-transform: none;
+    display: inline-block;
     white-space: nowrap;
+    word-wrap: normal;
     direction: ltr;
-    line-height: 1;
     vertical-align: middle;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    text-rendering: geometricPrecision;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "liga";
-    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 48;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 48;
 }
 
 .material-icons.info_outline:before {
     content: "\e88e";
-    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+    font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 48;
 }
 
 .dashboardFooter {
@@ -791,6 +835,10 @@ body {
     color: var(--uiAccentColor);
 }
 
+.emby-button {
+    gap: 1ch;
+}
+
 .emby-button.show-focus:focus,
 .paper-icon-button-light.show-focus:focus,
 .emby-tabs .emby-button.show-focus:focus {
@@ -817,8 +865,18 @@ body {
     }
 }
 
-.vertical-wrap:not(.centered) {
+.vertical-wrap:not(.centered),
+.vertical-wrap.padded-right-withalphapicker,
+.padded-right-withalphapicker > .vertical-wrap {
     justify-content: flex-start !important;
+}
+
+#episodesTab > .vertical-wrap,
+#studiosTab > .vertical-wrap,
+#channelsTab > .vertical-wrap,
+#recordingsTab > .vertical-wrap,
+#genresTab > .vertical-wrap {
+    justify-content: center !important;
 }
 
 .countIndicator,
@@ -826,6 +884,10 @@ body {
 .mediaSourceIndicator {
     background: rgb(31, 80, 189);
     border: var(--defaultLighterBorder);
+}
+
+.layout-mobile .indicator {
+    font-size: 70%;
 }
 
 .cardScalable {
@@ -930,31 +992,29 @@ body {
 
 .cardOverlayContainer:after {
     content: var(--cardHoverEffect);
-    transition: 0.5s;
+    transition: 0.65s;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    transform: translateY(-50%) translateX(0);
+    transform: translateY(-100%) translateX(0);
     background: var(--hoverGradientV);
 }
 
 .card-hoverable:hover .cardOverlayContainer:after {
-    transform: translateY(50%) translateX(0);
-    opacity: 0;
+    transform: translateY(100%) translateX(0);
 }
 
 .backdropCard.card-hoverable .cardOverlayContainer:after,
 .overflowBackdropCard.card-hoverable .cardOverlayContainer:after {
-    transform: translateY(0) translateX(-50%);
+    transform: translateY(0) translateX(-100%);
     background: var(--hoverGradientH);
 }
 
 .backdropCard.card-hoverable:hover .cardOverlayContainer:after,
 .overflowBackdropCard.card-hoverable:hover .cardOverlayContainer:after {
-    transform: translateY(0) translateX(50%);
-    opacity: 0;
+    transform: translateY(0) translateX(100%);
 }
 
 .cardBox:not(.visualCardBox) .cardPadder {
@@ -987,22 +1047,22 @@ body {
     color: white;
 }
 
-.cardOverlayButton-br .cardOverlayButton-hover[data-action="menu"],
-.layout-desktop .listItemButton[data-action="menu"] {
-    display: none;
-}
-
 .layout-desktop .cardOverlayButton-br,
 [dir="ltr"].layout-desktop .cardOverlayButton-br {
-    bottom: 0.75em;
-    right: 0.5em;
-    display: var(--extraCardButtonsVisibility);
+    bottom: 1.2em;
+    right: 0.7em;
     z-index: 1;
+    font-size: 0.8em;
 }
 
-.layout-desktop .cardOverlayButton-br button {
+.layout-desktop .cardOverlayButton-br > button {
     color: white;
+    display: var(--extraCardButtonsVisibility);
     text-shadow: var(--shadow);
+}
+.cardOverlayButton-br .cardOverlayButton-hover[data-action="menu"],
+.layout-desktop .listItemButton[data-action="menu"] {
+    display: var(--menuButtonVisibility);
 }
 
 .layout-mobile .cardOverlayButton {
@@ -1012,8 +1072,8 @@ body {
 
 .layout-mobile .cardOverlayButton-br,
 [dir="ltr"] .layout-mobile .cardOverlayButton-br {
-    bottom: 0.25em;
-    right: 0.25em;
+    /* bottom: 0.25em;
+    right: 0.25em; */
     display: var(--miniOverlayButtonVisibility);
 }
 
@@ -1206,7 +1266,7 @@ body {
     }
 }
 
-/* 12 posters, 9 thumbs, 4K*/
+/* 12 posters, 9 thumbs, 2160p*/
 @media (max-width: 220em) {
     .portraitCard,
     .squareCard {
@@ -1222,12 +1282,9 @@ body {
         --cardCount: 9;
     }
 
-    .backdropCard {
-        --cardCount: 9;
-    }
-
+    .backdropCard,
     .overflowBackdropCard {
-        --cardCount: 8;
+        --cardCount: 7;
     }
 }
 
@@ -1247,16 +1304,13 @@ body {
         --cardCount: 9;
     }
 
-    .backdropCard {
-        --cardCount: 9;
-    }
-
+    /* .backdropCard,
     .overflowBackdropCard {
-        --cardCount: 8;
-    }
+        --cardCount: 7;
+    } */
 }
 
-/* 10 posters, 8 thumbs */
+/* 10 posters, 8 thumbs, 1440p */
 @media (max-width: 170em) {
     .portraitCard,
     .squareCard {
@@ -1272,12 +1326,9 @@ body {
         --cardCount: 9;
     }
 
-    .backdropCard {
-        --cardCount: 8;
-    }
-
+    .backdropCard,
     .overflowBackdropCard {
-        --cardCount: 7;
+        --cardCount: 6;
     }
 }
 
@@ -1297,12 +1348,9 @@ body {
         --cardCount: 7;
     }
 
-    .backdropCard {
-        --cardCount: 7;
-    }
-
+    .backdropCard,
     .overflowBackdropCard {
-        --cardCount: 6;
+        --cardCount: 5;
     }
 }
 
@@ -1318,28 +1366,22 @@ body {
         --cardCount: 7;
     }
 
-    .layout-tv .portraitCard,
-    .layout-tv .squareCard,
-    .layout-tv .overflowPortraitCard,
-    .layout-tv .overflowSquareCard {
-        --cardCount: 6;
-    }
-
     .squareCard:has(.cardFooter) {
         --cardCount: 6;
     }
 
-    .backdropCard {
-        --cardCount: 6;
-    }
-
+    .backdropCard,
+    .layout-tv .portraitCard,
+    .layout-tv .squareCard,
+    .layout-tv .overflowPortraitCard,
+    .layout-tv .overflowSquareCard,
     .overflowBackdropCard {
         --cardCount: 5;
     }
 
     .layout-tv .backdropCard,
     .layout-tv .overflowBackdropCard {
-        --cardCount: 4;
+        --cardCount: 3;
     }
 }
 
@@ -1356,12 +1398,9 @@ body {
         --cardCount: 6;
     }
 
-    .backdropCard {
-        --cardCount: 6;
-    }
-
+    .backdropCard,
     .overflowBackdropCard {
-        --cardCount: 5;
+        --cardCount: 4;
     }
 }
 
@@ -1445,15 +1484,16 @@ body {
     }
 }
 
-.layout-mobile .card {
-    --sidePadding: 5%;
+.cardBox {
+    margin-top: 0;
 }
 
 .card {
-    --effectiveWidth: calc((99vw - (var(--sidePadding) * 2)));
+    --padding: 0.375em;
+    --effectiveWidth: calc(((100vw - (var(--padding) * 2)) - (var(--sidePadding) * 2)));
     --cardWidth: calc(var(--effectiveWidth) / var(--cardCount) - var(--itemColumnGap));
     width: var(--cardWidth) !important;
-    padding: 0.375em;
+    padding: var(--padding);
     transition: width 0.5s;
     box-sizing: content-box;
 }
@@ -1466,7 +1506,7 @@ body {
 }
 
 .layout-mobile .card {
-    --cardWidth: calc(var(--effectiveWidth) / var(--cardCount));
+    --padding: 1px;
 }
 
 /* this makes the card sizes smaller when phone is in landscape mode */
@@ -1474,6 +1514,17 @@ body {
     .layout-mobile .card {
         --effectiveWidth: calc((65vw - (var(--sidePadding) * 2)));
     }
+}
+
+#homeTab .overflowBackdropCard[data-positionticks],
+.nextUpItems > .card,
+#resumableItems > .card {
+    width: calc(var(--cardWidth) * var(--resumeCardScale)) !important;
+}
+
+.card .cardTextCentered {
+    /* text-align-last: left; */
+    text-shadow: 1px 1px 2px hsla(0, 0%, 0%, 0.8);
 }
 
 .detailPageWrapperContainer {
@@ -1579,16 +1630,11 @@ body {
     font-size: 1.25em;
 }
 
-.verticalSection.emby-scroller-container > h2.sectionTitle.sectionTitle-cards {
-    padding-top: 1.25em !important;
-    margin: 0 0 -0.5em 0;
-}
-
 #itemDetailPage .emby-scroller-container,
 #itemDetailPage .emby-scroller,
 #itemDetailPage .scrollX {
     margin: 0 calc(-1 * var(--sidePadding));
-    padding-left: calc(var(--sidePadding) - 0.375em);
+    padding-left: calc(var(--sidePadding));
     /* mask-image: linear-gradient(90deg, transparent, white var(--sidePadding), white calc(100vw - var(--sidePadding)), transparent); */
 }
 
@@ -1600,15 +1646,22 @@ body {
 
 .emby-scroller,
 .scrollX {
-    padding-left: calc(var(--sidePadding) - 0.375em);
+    padding-left: calc(var(--sidePadding));
 }
 
 .sectionTabs .scrollX {
     padding-left: 0;
 }
 
-.itemsContainer:not(.editorsChoiceItemsContainer) {
+.itemsContainer:not(.editorsChoiceItemsContainer, .vertical-list) {
     column-gap: var(--itemColumnGap);
+    row-gap: 1em;
+}
+
+/* this is a workaround to add a gap between the last child and the edge of the screen on phones */
+.layout-mobile .itemsContainer:not(.editorsChoiceItemsContainer, .vertical-wrap, .vertical-list)::after {
+    content: "13";
+    color: transparent;
 }
 
 .layout-desktop .sectionTitle,
@@ -1618,10 +1671,6 @@ body {
 
 .emby-scrollbuttons,
 [dir="ltr"] .emby-scrollbuttons {
-    padding-top: 1.25em;
-}
-
-.sectionTitleContainer + .emby-scrollbuttons {
     padding-top: 0;
 }
 
@@ -1675,6 +1724,11 @@ body {
 
 .detailRibbon:has(.portraitCard .folder) {
     min-height: 32vh;
+    align-content: flex-end;
+}
+
+.layout-desktop .detailRibbon:has(.person) {
+    min-height: 15vh;
     align-content: flex-end;
 }
 
@@ -1763,6 +1817,7 @@ body {
 #itemDetailPage:has(.subtitle) .itemBackdrop,
 #itemDetailPage:has(.musicParentName) .itemBackdrop,
 #itemDetailPage:has(.detailImageContainer .backdropCard) .itemBackdrop,
+#itemDetailPage:has(.detailImageContainer .squareCard) .itemBackdrop,
 #itemDetailPage:has(.detailImageContainer .person) .itemBackdrop,
 #itemDetailPage:has(.detailImageContainer .queue) .itemBackdrop,
 #itemDetailPage:has(.detailImageContainer .book) .itemBackdrop,
@@ -1770,8 +1825,8 @@ body {
     height: calc(100vh - 27vh - var(--secondaryItemPageNegativeSpace));
 }
 
-#itemDetailPage:has(.detailImageContainer .cardPadder-square:not(.person)) .itemBackdrop {
-    height: calc(100vh - 20vh - var(--secondaryItemPageNegativeSpace));
+#itemDetailPage:has(.detailImageContainer .cardPadder-square > .person) .itemBackdrop {
+    height: calc(100vh - 8vh - var(--secondaryItemPageNegativeSpace));
 }
 
 .detailLogo {
@@ -1808,6 +1863,10 @@ body {
 
 #itemDetailPage:has(.subtitle) .detailLogo {
     top: calc(100vh - 6em - var(--secondaryItemPageNegativeSpace));
+}
+
+.layout-desktop #itemDetailPage:has(.detailImageContainer .person) .detailLogo {
+    top: calc(100vh - var(--secondaryItemPageNegativeSpace));
 }
 
 .layout-mobile #itemDetailPage:has(.subtitle) .detailLogo {
@@ -1891,10 +1950,14 @@ body {
 
 /* this hides the detail logo  when media card is visible */
 #itemDetailPage:has(.detailImageContainer .backdropCard) .detailLogo,
-#itemDetailPage:has(.detailImageContainer .album) .detailLogo,
-#itemDetailPage:has(.detailImageContainer .person) .detailLogo {
+#itemDetailPage:has(.detailImageContainer .album) .detailLogo {
     z-index: 2;
     display: none;
+}
+
+#itemDetailPage:has(.detailImageContainer .person) .detailLogo {
+    z-index: 2;
+    display: var(--artistClearLogoVisibility);
 }
 
 /* this hides the main media title when the clear logo is available*/
@@ -1903,13 +1966,17 @@ body {
     display: var(--itemTitleVisibility);
 }
 
+.detailImageContainer:has(.squareCard .person) ~ .nameContainer h1 {
+    display: var(--artistTitleVisibility);
+}
+
 /* this shows the main media title and the poster when the clear logo is unavailable*/
 .detailLogo.hide ~ .detailPageWrapperContainer .nameContainer h1 {
     display: block !important;
 }
 
-.detailImageContainer:has(.backdropCard, .squareCard) ~ .nameContainer h1,
-.detailImageContainer:has(.cardImageIcon.person) ~ .nameContainer h1 {
+.detailImageContainer:has(.backdropCard) ~ .nameContainer h1,
+.detailImageContainer:has(.album) ~ .nameContainer h1 {
     display: block !important;
 }
 
@@ -1947,7 +2014,11 @@ body {
 
 #itemDetailPage:has(.subtitle),
 #itemDetailPage:has(.musicParentName) {
-    background: linear-gradient(180deg, var(--darkerGradientPointAlpha) 80%, transparent);
+    background: var(--backgroundAlphaOverlay);
+}
+
+#itemDetailPage:has(.detailImageContainer .cardPadder-square > .person) {
+    background: var(--artistPageBackground, var(--backgroundAlphaOverlay));
 }
 
 .layout-mobile #itemDetailPage:has(.detailImageContainer .backdropCard) .itemBackdrop,
@@ -1960,15 +2031,16 @@ body {
     font-size: 3.5em;
 }
 
-@media (max-width: 50em) {
-    .homeLibraryButton {
-        width: 45.6% !important;
-    }
+.homeLibraryButton {
+    width: min(45%, 12rem);
+    min-width: 15%;
+    margin: 0 !important;
 }
 
-.homeLibraryButton {
-    padding-inline-start: 0.25em;
-    min-width: 15%;
+@media (max-width: 50em) {
+    .homeLibraryButton {
+        width: 47.6% !important;
+    }
 }
 
 @media (orientation: portrait) and (max-width: 40em) {
@@ -2243,9 +2315,9 @@ progress + span {
 
 .mdl-slider::-webkit-slider-thumb {
     background: var(--osdSeekBarThumbColor);
-    width: 4px !important;
+    width: 0.4em !important;
     height: 0.4em !important;
-    border-radius: 0em;
+    border-radius: 0.4em;
 }
 
 .sliderContainer:hover .mdl-slider::-webkit-slider-thumb {
@@ -2263,8 +2335,27 @@ progress + span {
     transform: scale(1) scaleY(1.25);
 }
 
+/* These Firefox thumb styles are separate because combining them breaks the effect from chrome */
 .mdl-slider::-moz-range-thumb {
     background: var(--osdSeekBarThumbColor);
+    width: 0.4em !important;
+    height: 0.4em !important;
+    border-radius: 0.4em;
+}
+
+.sliderContainer:hover .mdl-slider::-moz-range-thumb {
+    width: 0.2em !important;
+    height: 0.8em !important;
+    border-radius: 0.2em;
+    transform: scale(1);
+}
+
+.sliderContainer:active .mdl-slider::-moz-range-thumb,
+.mdl-slider.show-focus:focus::-moz-range-thumb {
+    width: 0.2em !important;
+    height: 0.8em !important;
+    border-radius: 0.2em;
+    transform: scale(1) scaleY(1.25);
 }
 
 .sliderMarkerContainer {
@@ -2313,6 +2404,10 @@ progress + span {
     padding-bottom: 5vh;
 }
 
+.mainDrawer-scrollContainer > div:first-child {
+    margin-bottom: 1em;
+}
+
 .btnHeaderSave.button-flat {
     color: var(--uiAccentColor) !important;
     gap: 0.3em;
@@ -2334,14 +2429,6 @@ progress + span {
 
 .videoOsdBottom.videoOsdBottom-maincontrols .btnPause {
     font-size: 2em;
-}
-
-.nowPlayingBar .playPauseButton {
-    font-size: 2em;
-}
-
-.nowPlayingInfoContainer .btnPlayPause {
-    font-size: 3em;
 }
 
 .osdControls {
@@ -2451,8 +2538,11 @@ progress + span {
 }
 
 .overview-expand.emby-button:after {
-    content: "\e313";
-    font-family: "Material Icons";
+    content: "keyboard_arrow_down";
+    font-family:
+        var(--iconPack),
+        Material Icons;
+    font-feature-settings: "liga";
     background: var(--selectorBackgroundColor);
     border-radius: 50%;
     width: 1.5em;
@@ -2514,7 +2604,7 @@ progress + span {
 }
 
 .layout-mobile .innerCardFooter {
-    padding: 5em 1.5em 1.5em 1.5em;
+    padding: 5em 1em 1.25em 1em;
 }
 
 .layout-mobile .chapterCardImageContainer + .innerCardFooter {
@@ -2523,6 +2613,10 @@ progress + span {
 
 .centerMessage {
     width: unset;
+}
+
+.noItemsMessage {
+    width: 90%;
 }
 
 .dialog {
@@ -2584,6 +2678,8 @@ progress + span {
     background: var(--lighterGradientPoint);
     border-bottom: var(--defaultBorder);
     backdrop-filter: var(--blurLarge);
+    height: 3.5em;
+    padding-top: max(env(safe-area-inset-top), var(--safe-area-inset-top));
 }
 
 .selectionCommandsPanel > h1 {
@@ -2629,7 +2725,7 @@ progress + span {
 }
 
 .overflowBackdropCard .cardText-first + .itemSelectionPanel > .checkboxContainer {
-    height: calc(100% - 0em);
+    height: 100%;
 }
 
 .checkboxContainer .emby-checkbox:checked + span + .checkboxOutline.multiSelectCheckboxOutline {
@@ -2657,7 +2753,7 @@ progress + span {
 
 .cardFooter + .itemSelectionPanel > .checkboxContainer,
 .cardScalable + .itemSelectionPanel > .checkboxContainer {
-    height: calc(100% - 0em);
+    height: 100%;
 }
 
 .checkboxOutline.multiSelectCheckboxOutline {
@@ -2717,8 +2813,8 @@ progress + span {
 }
 
 .layout-mobile .cardIndicators {
-    top: 0.2em;
-    right: 0.2em;
+    top: 0.45em;
+    right: 0.5em;
 }
 
 .indicator {
@@ -2758,16 +2854,16 @@ progress + span {
 }
 
 div[data-type="Book"] .play_arrow:before {
-    content: "\f1c6";
+    content: "book";
     font-size: 85%;
 }
 
 div[data-type="Photo"] .play_arrow:before {
-    content: "\e5d0";
+    content: "photo";
 }
 
 div[data-type="PhotoAlbum"] .play_arrow:before {
-    content: "\e8eb";
+    content: "photo_album";
 }
 
 .emby-button.block,
@@ -2821,16 +2917,28 @@ div[data-type="PhotoAlbum"] .play_arrow:before {
 }
 
 .detailButton-icon {
-    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+    font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 48;
 }
 
 .cardScalable .material-icons.check:before {
-    font-variation-settings: "FILL" 1, "wght" 700, "GRAD" 0, "opsz" 20;
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 700,
+        "GRAD" 0,
+        "opsz" 20;
     transform: scale(1.25);
 }
 
 .emby-button[title="Favorite"] .material-icons.favorite:before {
-    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 20;
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 20;
 }
 
 .detailButton:not(.btnPlay) {
@@ -2864,9 +2972,9 @@ div[data-type="PhotoAlbum"] .play_arrow:before {
     flex-direction: row;
 }
 
-.btnPlay:not(.formDialogFooterItem):not(.play-button):after {
+.mainDetailButtons > .btnPlay:after {
     content: attr(title);
-    padding: 0 1ch;
+    padding-right: 1ch;
 }
 
 .btnPlay > .detailButton-content::after {
@@ -2891,7 +2999,7 @@ div[data-type="PhotoAlbum"] .play_arrow:before {
 }
 
 .mainDetailButtons:has(.detailButton[data-type="Book"]) .btnPlay .material-icons.play_arrow:before {
-    content: "\f1c6";
+    content: "book";
     padding-inline-end: 1ch;
 }
 
@@ -3106,7 +3214,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .MuiListItem-root > div {
     border: solid transparent var(--borderWidth);
     border-radius: 0.7em;
-    margin: 0.25 0.5em !important;
+    /* margin: 0.25em 0.5em !important; */
 }
 
 .Mui-selected {
@@ -3130,9 +3238,13 @@ div[data-role="controlgroup"] a.ui-btn-active {
     font-size: unset;
 }
 
-[dir="ltr"] .actionsheetMenuItemIcon.check {
-    margin: 0 0.45em 0 0.45em !important;
+[dir="ltr"] .actionsheetMenuItemIcon {
+    margin: 0 0.2em 0 0.45em !important;
 }
+
+/* [dir="ltr"] .actionsheetMenuItemIcon.check {
+    margin: 0 0.45em 0 0.45em !important;
+} */
 
 .actionSheetMenuItem:has(.listItemIcon.check) {
     background-color: var(--activeColor);
@@ -3178,13 +3290,13 @@ div[data-role="controlgroup"] a.ui-btn-active {
     row-gap: 1em;
     column-gap: 3em;
     max-width: unset !important;
-    grid-template-columns: 25% 1fr 1fr 1fr;
+    grid-template-columns: 1.3fr 0.7fr 1fr 1fr;
     margin-bottom: 1.5em;
 }
 
-.layout-mobile .detailSection {
-    grid-template-columns: 1fr;
-}
+/* .layout-mobile .detailSection {
+    grid-template-columns: 1fr !important;
+} */
 
 .detailPageContent {
     gap: 1em;
@@ -3221,6 +3333,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .trackSelections .selectContainer {
     max-width: unset !important;
     align-items: baseline;
+    /* margin: 0.25em !important; */
 }
 
 .selectArrowContainer {
@@ -3354,6 +3467,10 @@ div[data-role="controlgroup"] a.ui-btn-active {
     grid-column: 1 / -1;
 }
 
+.collectionItems {
+    order: 2;
+}
+
 .programGuideSection:not(.hide) {
     order: -1;
     margin-top: 2em;
@@ -3392,6 +3509,10 @@ div[data-role="controlgroup"] a.ui-btn-active {
     height: 70%;
 }
 
+.layout-mobile .alphaPicker-vertical {
+    right: 0 !important;
+}
+
 .alphaPicker {
     justify-content: center;
 }
@@ -3408,20 +3529,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .padded-right {
     padding-right: var(--sidePadding) !important;
 }
-
-/* .padded-left {
-    padding-left: var(--sidePadding) !important;
-} */
-
-.layout-mobile .padded-right-withalphapicker {
-    padding-left: 4.5%;
-    padding-right: 6.5%;
-}
-
-/* test disabled for 10.11.0 */
-/* .detailPagePrimaryContent.padded-right {
-    padding-right: 0 !important;
-} */
 
 [dir="ltr"] .detailPageContent,
 .content-primary {
@@ -3440,12 +3547,16 @@ div[data-role="controlgroup"] a.ui-btn-active {
     padding-right: 0 !important;
 }
 
+.vertical-list > .listGroupHeader {
+    padding-left: 0.5ch;
+}
+
 .listPaging > span {
     padding: 0 0.5em;
 }
 
 .layout-mobile #myPreferencesMenuPage {
-    padding-top: 3.75em !important;
+    padding-top: var(--appBarHeight) !important;
 }
 
 .headerUserButton {
@@ -3478,6 +3589,11 @@ div[data-role="controlgroup"] a.ui-btn-active {
     background: var(--selectorBackgroundColor) !important;
 }
 
+.verticalSection {
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
 .sectionTitleTextButton {
     padding: 0 0.5em;
 }
@@ -3492,12 +3608,12 @@ div[data-role="controlgroup"] a.ui-btn-active {
 
 .sectionTitleContainer-cards {
     padding-top: 0;
-    margin: 0.75em 0 -0.75em 0;
+    padding-bottom: 0.2em;
 }
 
 .sectionTitleTextButton > * {
     text-align: left;
-    /* !important are needed for proper alignment on phones */
+    /* the !important are needed for proper alignment on phones */
     padding: 0.3em 0 !important;
     margin: 0 0 !important;
     /* this prevents long library names from breaking into another line */
@@ -3505,11 +3621,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 88vw;
-}
-
-/* this is needed for alignment of non-clickable section headings on phones */
-.layout-mobile :not(.sectionTitleContainer-cards) > .sectionTitle-cards {
-    margin: 0.75em 0 -0.75em 0;
 }
 
 .dashboardSection .sectionTitleTextButton > .material-icons,
@@ -3523,7 +3634,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .sectionTitleTextButton > .material-icons.chevron_right {
-    margin-left: 0.5rem !important;
+    /* margin-left: 0.5rem !important; */
     height: 1.5rem;
     width: 1.5rem;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23D1D5DB' aria-hidden='true'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'%3E%3C/path%3E%3C/svg%3E")
@@ -3567,13 +3678,14 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .skip-button-container {
-    bottom: 25%;
+    bottom: 9rem;
 }
 
 .skip-button {
-    background-color: whitesmoke;
+    background-color: var(--textColor);
     box-shadow: var(--shadow);
     margin-right: var(--sidePadding);
+    border-radius: 3em;
     color: black;
 }
 
@@ -3937,7 +4049,7 @@ table:not(.MuiTable-root.MuiTable-stickyHeader) {
 }
 
 ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
-    /* ! Don't change these units. They are rem because that is standard for MUI */
+    /* Don't change these units. They are rem because that is standard for MUI */
     gap: 0.5rem;
 }
 
@@ -3974,8 +4086,8 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     min-height: 100vh;
     padding: 1em;
     overflow-y: auto;
-    background: linear-gradient(to bottom, var(--darkerGradientPointAlpha), var(--lighterGradientPoint)),
-        var(--loginPageBgUrl);
+    background:
+        linear-gradient(to bottom, var(--darkerGradientPointAlpha), var(--lighterGradientPoint)), var(--loginPageBgUrl);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -4163,6 +4275,14 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     aspect-ratio: 1 / 1;
 }
 
+.nowPlayingBar .playPauseButton {
+    font-size: 2em;
+}
+
+.nowPlayingInfoContainer .btnPlayPause {
+    font-size: 3em;
+}
+
 .nowPlayingBar .nowPlayingImage {
     background-size: cover;
     border-radius: var(--smallerRadius);
@@ -4339,16 +4459,19 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
 }
 
 .noHomeButtonHeader .emby-tab-button[data-index="1"]:before {
-    content: "\e87d";
+    content: "favorite";
 }
 
 .noHomeButtonHeader .emby-tab-button[data-index="0"]:before {
-    content: "\e88a";
+    content: "home";
 }
 
 .noHomeButtonHeader .emby-tab-button:before {
-    font-family: "Material Icons Round";
-    padding-inline-end: 0.5ch;
+    font-family:
+        var(--iconPack),
+        Material Icons;
+    font-feature-settings: "liga";
+    /* padding-inline-end: 0.5ch; */
     font-size: 1.2em;
     font-variation-settings: "FILL" 0;
 }
@@ -4450,6 +4573,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     container-name: skinHeader;
     container-type: size;
     height: var(--appBarHeight);
+    max-height: var(--appBarHeight);
 }
 
 @container skinHeader (min-height: 4.9em) {
@@ -4482,6 +4606,11 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
     .layout-mobile .sectionTabs {
         align-content: center;
     }
+}
+
+.skinHeader {
+    /* this is for testing a fix for iOS  */
+    padding-top: max(env(safe-area-inset-top), var(--safe-area-inset-top)) !important;
 }
 
 .nowPlayingPage {
@@ -4533,7 +4662,9 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child {
 }
 
 .card.show-animation .cardBox {
-    transition: transform 0.05s ease-out, -webkit-transform 0.05s ease-out;
+    transition:
+        transform 0.05s ease-out,
+        -webkit-transform 0.05s ease-out;
 }
 
 /* performance improvements fot low-end TVs - end */

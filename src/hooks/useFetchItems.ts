@@ -1,23 +1,24 @@
 import type { AxiosRequestConfig } from 'axios';
-import type { ItemsApiGetItemsRequest, PlaylistsApiMoveItemRequest } from '@jellyfin/sdk/lib/generated-client';
+import type { LibraryApiGetItemsRequest } from '@jellyfin/sdk/lib/generated-client/api/library-api';
+import type { PlaylistApiMoveItemRequest } from '@jellyfin/sdk/lib/generated-client/api/playlist-api';
 import type { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models/base-item-kind';
 import { ImageType } from '@jellyfin/sdk/lib/generated-client/models/image-type';
 import { ItemFields } from '@jellyfin/sdk/lib/generated-client/models/item-fields';
 import { ItemFilter } from '@jellyfin/sdk/lib/generated-client/models/item-filter';
+import { PersonKind } from '@jellyfin/sdk/lib/generated-client/models/person-kind';
 import { ItemSortBy } from '@jellyfin/sdk/lib/generated-client/models/item-sort-by';
 import { SortOrder } from '@jellyfin/sdk/lib/generated-client/models/sort-order';
-import { getArtistsApi } from '@jellyfin/sdk/lib/utils/api/artists-api';
+import { getArtistApi } from '@jellyfin/sdk/lib/utils/api/artist-api';
 import { getFilterApi } from '@jellyfin/sdk/lib/utils/api/filter-api';
-import { getGenresApi } from '@jellyfin/sdk/lib/utils/api/genres-api';
-import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
-import { getMoviesApi } from '@jellyfin/sdk/lib/utils/api/movies-api';
-import { getStudiosApi } from '@jellyfin/sdk/lib/utils/api/studios-api';
-import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api';
-import { getUserLibraryApi } from '@jellyfin/sdk/lib/utils/api/user-library-api';
-import { getPlaylistsApi } from '@jellyfin/sdk/lib/utils/api/playlists-api';
+import { getGenreApi } from '@jellyfin/sdk/lib/utils/api/genre-api';
+import { getPersonApi } from '@jellyfin/sdk/lib/utils/api/person-api';
+import { getStudioApi } from '@jellyfin/sdk/lib/utils/api/studio-api';
+import { getShowApi } from '@jellyfin/sdk/lib/utils/api/show-api';
+import { getPlaylistApi } from '@jellyfin/sdk/lib/utils/api/playlist-api';
+import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { getLiveTvApi } from '@jellyfin/sdk/lib/utils/api/live-tv-api';
-import { getPlaystateApi } from '@jellyfin/sdk/lib/utils/api/playstate-api';
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { getUserDataApi } from '@jellyfin/sdk/lib/utils/api/user-data-api';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import datetime from 'scripts/datetime';
 import globalize from 'lib/globalize';
 
@@ -34,12 +35,12 @@ import type { ItemDto } from 'types/base/models/item-dto';
 
 const fetchGetItems = async (
     currentApi: JellyfinApiContext,
-    parametersOptions: ItemsApiGetItemsRequest,
+    parametersOptions: LibraryApiGetItemsRequest,
     options?: AxiosRequestConfig
 ) => {
     const { api, user } = currentApi;
     if (api && user?.Id) {
-        const response = await getItemsApi(api).getItems(
+        const response = await getLibraryApi(api).getItems(
             {
                 userId: user.Id,
                 ...parametersOptions
@@ -52,8 +53,10 @@ const fetchGetItems = async (
     }
 };
 
-export const useGetItems = (parametersOptions: ItemsApiGetItemsRequest) => {
+export const useGetItems = (parametersOptions: LibraryApiGetItemsRequest) => {
     const currentApi = useApi();
+    const isRandom = Boolean(parametersOptions.sortBy?.includes(ItemSortBy.Random));
+
     return useQuery({
         queryKey: [
             'Items',
@@ -63,43 +66,10 @@ export const useGetItems = (parametersOptions: ItemsApiGetItemsRequest) => {
         ],
         queryFn: ({ signal }) =>
             fetchGetItems(currentApi, parametersOptions, { signal }),
-        gcTime: parametersOptions.sortBy?.includes(ItemSortBy.Random) ? 0 : undefined,
+        gcTime: isRandom ? Infinity : undefined,
+        refetchOnMount: isRandom ? false : undefined,
+        refetchOnWindowFocus: isRandom ? false : undefined,
         enabled: !!currentApi.api && !!currentApi.user?.Id
-    });
-};
-
-const fetchGetMovieRecommendations = async (
-    currentApi: JellyfinApiContext,
-    parentId: ParentId,
-    options?: AxiosRequestConfig
-) => {
-    const { api, user } = currentApi;
-    if (api && user?.Id) {
-        const response = await getMoviesApi(api).getMovieRecommendations(
-            {
-                userId: user.Id,
-                fields: [
-                    ItemFields.PrimaryImageAspectRatio,
-                    ItemFields.MediaSourceCount
-                ],
-                parentId: parentId ?? undefined,
-                categoryLimit: 6,
-                itemLimit: 20
-            },
-            {
-                signal: options?.signal
-            }
-        );
-        return response.data;
-    }
-};
-
-export const useGetMovieRecommendations = (isMovieRecommendationEnabled: boolean, parentId: ParentId) => {
-    const currentApi = useApi();
-    return useQuery({
-        queryKey: ['MovieRecommendations', isMovieRecommendationEnabled, parentId],
-        queryFn: ({ signal }) => fetchGetMovieRecommendations(currentApi, parentId, { signal }),
-        enabled: !!currentApi.api && !!currentApi.user?.Id && isMovieRecommendationEnabled
     });
 };
 
@@ -111,7 +81,7 @@ const fetchGetGenres = async (
 ) => {
     const { api, user } = currentApi;
     if (api && user?.Id) {
-        const response = await getGenresApi(api).getGenres(
+        const response = await getGenreApi(api).getGenres(
             {
                 userId: user.Id,
                 sortBy: [ItemSortBy.SortName],
@@ -146,7 +116,7 @@ const fetchGetStudios = async (
 ) => {
     const { api, user } = currentApi;
     if (api && user?.Id) {
-        const response = await getStudiosApi(api).getStudios(
+        const response = await getStudioApi(api).getStudios(
             {
                 userId: user.Id,
                 includeItemTypes: itemType,
@@ -217,18 +187,19 @@ export const useGetQueryFiltersLegacy = (
 
 const fetchGetItemsViewByType = async (
     currentApi: JellyfinApiContext,
-    viewType: LibraryTab,
+    viewType: LibraryTab | undefined,
     parentId: ParentId,
     itemType: BaseItemKind[],
     libraryViewSettings: LibraryViewSettings,
     options?: AxiosRequestConfig
 ) => {
     const { api, user } = currentApi;
-    if (api && user?.Id) {
+    if (api && user?.Id && viewType) {
+        const isFavorite = libraryViewSettings.Filters?.Status?.includes(ItemFilter.IsFavorite) || undefined;
         let response;
         switch (viewType) {
             case LibraryTab.AlbumArtists: {
-                response = await getArtistsApi(api).getAlbumArtists(
+                response = await getArtistApi(api).getAlbumArtists(
                     {
                         userId: user.Id,
                         parentId: parentId ?? undefined,
@@ -249,7 +220,7 @@ const fetchGetItemsViewByType = async (
                 break;
             }
             case LibraryTab.Artists: {
-                response = await getArtistsApi(api).getArtists(
+                response = await getArtistApi(api).getArtists(
                     {
                         userId: user.Id,
                         parentId: parentId ?? undefined,
@@ -269,13 +240,35 @@ const fetchGetItemsViewByType = async (
                 );
                 break;
             }
-            case LibraryTab.Networks:
-                response = await getStudiosApi(api).getStudios(
+            case LibraryTab.Authors: {
+                response = await getPersonApi(api).getPersons(
+                    {
+                        userId: user.Id,
+                        parentId: parentId ?? undefined,
+                        enableImageTypes: [libraryViewSettings.ImageType, ImageType.Backdrop],
+                        fields: [ItemFields.PrimaryImageAspectRatio],
+                        filters: libraryViewSettings?.Filters?.Status,
+                        ...getLimitQuery(),
+                        ...getAlphaPickerQuery(libraryViewSettings),
+                        personTypes: [PersonKind.Author],
+                        startIndex: libraryViewSettings.StartIndex
+                    },
+                    {
+                        signal: options?.signal
+                    }
+                );
+                break;
+            }
+            case LibraryTab.Studios:
+                response = await getStudioApi(api).getStudios(
                     {
                         userId: user.Id,
                         parentId: parentId ?? undefined,
                         ...getFieldsQuery(viewType, libraryViewSettings),
+                        ...getLimitQuery(),
+                        ...getAlphaPickerQuery(libraryViewSettings),
                         includeItemTypes: itemType,
+                        isFavorite,
                         enableImageTypes: [ImageType.Thumb],
                         startIndex: libraryViewSettings.StartIndex
                     },
@@ -290,10 +283,33 @@ const fetchGetItemsViewByType = async (
                         userId: user.Id,
                         fields: [ItemFields.PrimaryImageAspectRatio],
                         startIndex: libraryViewSettings.StartIndex,
-                        isFavorite: libraryViewSettings.Filters?.Status?.includes(ItemFilter.IsFavorite) ?
-                            true :
-                            undefined,
+                        isFavorite,
                         enableImageTypes: [ImageType.Primary]
+                    },
+                    {
+                        signal: options?.signal
+                    }
+                );
+                break;
+            }
+            case LibraryTab.Folders: {
+                response = await getLibraryApi(api).getItems(
+                    {
+                        userId: user.Id,
+                        recursive: false,
+                        imageTypeLimit: 1,
+                        parentId: parentId ?? undefined,
+                        enableImageTypes: [libraryViewSettings.ImageType, ImageType.Backdrop],
+                        ...getFieldsQuery(viewType, libraryViewSettings),
+                        ...getFiltersQuery(viewType, libraryViewSettings),
+                        ...getLimitQuery(),
+                        ...getAlphaPickerQuery(libraryViewSettings),
+                        sortBy: libraryViewSettings.SortBy === ItemSortBy.IsFolder ?
+                            [ItemSortBy.IsFolder, ItemSortBy.SortName] :
+                            [libraryViewSettings.SortBy],
+                        sortOrder: [libraryViewSettings.SortOrder],
+                        includeItemTypes: itemType,
+                        startIndex: libraryViewSettings.StartIndex
                     },
                     {
                         signal: options?.signal
@@ -313,7 +329,7 @@ const fetchGetItemsViewByType = async (
                 );
                 break;
             default: {
-                response = await getItemsApi(api).getItems(
+                response = await getLibraryApi(api).getItems(
                     {
                         userId: user.Id,
                         recursive: true,
@@ -339,21 +355,26 @@ const fetchGetItemsViewByType = async (
         }
         return response.data as ItemDtoQueryResult;
     }
+
+    return {};
 };
 
 export const useGetItemsViewByType = (
-    viewType: LibraryTab,
+    viewType: LibraryTab | undefined,
     parentId: ParentId,
-    itemType: BaseItemKind[],
+    itemType: BaseItemKind[] = [],
     libraryViewSettings: LibraryViewSettings
 ) => {
     const currentApi = useApi();
     return useQuery({
         queryKey: [
-            'ItemsViewByType',
+            'User',
+            currentApi.user?.Id,
+            'Items',
+            parentId,
+            'ViewByType',
+            viewType,
             {
-                viewType,
-                parentId,
                 itemType,
                 libraryViewSettings
             }
@@ -364,22 +385,23 @@ export const useGetItemsViewByType = (
                 viewType,
                 parentId,
                 itemType,
-                libraryViewSettings,
+                libraryViewSettings!,
                 { signal }
             ),
         refetchOnWindowFocus: false,
-        placeholderData : keepPreviousData,
         enabled: !!currentApi.api && !!currentApi.user?.Id
+            && viewType
             && [
                 LibraryTab.Movies,
                 LibraryTab.Favorites,
                 LibraryTab.Collections,
                 LibraryTab.Series,
                 LibraryTab.Episodes,
-                LibraryTab.Networks,
+                LibraryTab.Studios,
                 LibraryTab.Albums,
                 LibraryTab.AlbumArtists,
                 LibraryTab.Artists,
+                LibraryTab.Authors,
                 LibraryTab.Playlists,
                 LibraryTab.Songs,
                 LibraryTab.Books,
@@ -387,18 +409,21 @@ export const useGetItemsViewByType = (
                 LibraryTab.Photos,
                 LibraryTab.Videos,
                 LibraryTab.Channels,
-                LibraryTab.SeriesTimers
+                LibraryTab.SeriesTimers,
+                LibraryTab.MusicVideos,
+                LibraryTab.Folders,
+                LibraryTab.Mixed
             ].includes(viewType)
     });
 };
 
 const fetchPlaylistsMoveItem = async (
     currentApi: JellyfinApiContext,
-    requestParameters: PlaylistsApiMoveItemRequest
+    requestParameters: PlaylistApiMoveItemRequest
 ) => {
     const { api, user } = currentApi;
     if (api && user?.Id) {
-        const response = await getPlaylistsApi(api).moveItem({
+        const response = await getPlaylistApi(api).moveItem({
             ...requestParameters
         });
         return response.data;
@@ -408,7 +433,7 @@ const fetchPlaylistsMoveItem = async (
 export const usePlaylistsMoveItemMutation = () => {
     const currentApi = useApi();
     return useMutation({
-        mutationFn: (requestParameters: PlaylistsApiMoveItemRequest) =>
+        mutationFn: (requestParameters: PlaylistApiMoveItemRequest) =>
             fetchPlaylistsMoveItem(currentApi, requestParameters )
     });
 };
@@ -468,7 +493,7 @@ const fetchGetGroupsUpcomingEpisodes = async (
 ) => {
     const { api, user } = currentApi;
     if (api && user?.Id) {
-        const response = await getTvShowsApi(api).getUpcomingEpisodes(
+        const response = await getShowApi(api).getUpcomingEpisodes(
             {
                 userId: user.Id,
                 limit: 25,
@@ -514,13 +539,13 @@ const fetchUpdateFavoriteStatus = async (
     const { api, user } = currentApi;
     if (api && user?.Id) {
         if (isFavorite) {
-            const response = await getUserLibraryApi(api).unmarkFavoriteItem({
+            const response = await getUserDataApi(api).unmarkFavoriteItem({
                 userId: user.Id,
                 itemId: itemId
             });
             return response.data.IsFavorite;
         } else {
-            const response = await getUserLibraryApi(api).markFavoriteItem({
+            const response = await getUserDataApi(api).markFavoriteItem({
                 userId: user.Id,
                 itemId: itemId
             });
@@ -550,13 +575,13 @@ const fetchUpdatePlayedState = async (
     const { api, user } = currentApi;
     if (api && user?.Id) {
         if (isPlayed) {
-            const response = await getPlaystateApi(api).markUnplayedItem({
+            const response = await getUserDataApi(api).markUnplayedItem({
                 userId: user.Id,
                 itemId: itemId
             });
             return response.data.Played;
         } else {
-            const response = await getPlaystateApi(api).markPlayedItem({
+            const response = await getUserDataApi(api).markPlayedItem({
                 userId: user.Id,
                 itemId: itemId
             });
@@ -749,7 +774,7 @@ const fetchGetSectionItems = async (
             }
             case SectionApiMethod.NextUp: {
                 response = (
-                    await getTvShowsApi(api).getNextUp(
+                    await getShowApi(api).getNextUp(
                         {
                             userId: user.Id,
                             limit: 25,
@@ -776,7 +801,7 @@ const fetchGetSectionItems = async (
             }
             case SectionApiMethod.ResumeItems: {
                 response = (
-                    await getItemsApi(api).getResumeItems(
+                    await getLibraryApi(api).getResumeItems(
                         {
                             userId: user.Id,
                             parentId: parentId ?? undefined,
@@ -802,7 +827,7 @@ const fetchGetSectionItems = async (
             }
             case SectionApiMethod.LatestMedia: {
                 response = (
-                    await getUserLibraryApi(api).getLatestMedia(
+                    await getLibraryApi(api).getLatestMedia(
                         {
                             userId: user.Id,
                             fields: [
@@ -823,7 +848,7 @@ const fetchGetSectionItems = async (
             }
             default: {
                 response = (
-                    await getItemsApi(api).getItems(
+                    await getLibraryApi(api).getItems(
                         {
                             userId: user.Id,
                             parentId: parentId ?? undefined,
@@ -885,7 +910,7 @@ export const useGetSuggestionSectionsWithItems = (
     const currentApi = useApi();
     const sections = getSuggestionSections();
     return useQuery({
-        queryKey: ['SuggestionSectionWithItems', { suggestionSectionType }],
+        queryKey: ['SuggestionSectionWithItems', parentId, { suggestionSectionType }],
         queryFn: ({ signal }) =>
             getSectionsWithItems(currentApi, parentId, sections, suggestionSectionType, { signal }),
         enabled: !!currentApi.api && !!currentApi.user?.Id && !!parentId

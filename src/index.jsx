@@ -180,9 +180,9 @@ function loadPlatformFeatures() {
         import('./components/playback/playbackorientation');
         registerServiceWorker();
 
-        if (window.Notification) {
-            import('./components/notifications/notifications');
-        }
+        // if (window.Notification) {
+        //     import('./components/notifications/notifications');
+        // }
     }
 }
 

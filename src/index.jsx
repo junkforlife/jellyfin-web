@@ -196,7 +196,7 @@ function loadPlatformFeatures() {
         registerServiceWorker();
 
         if (window.Notification) {
-            import('./components/notifications/notifications');
+            //import('./components/notifications/notifications');
         }
     }
 }
